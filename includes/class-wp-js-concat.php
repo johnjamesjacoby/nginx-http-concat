@@ -1,14 +1,26 @@
 <?php
 
+// Exit if accessed directly
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * 
+ */
 class WP_JS_Concat extends WP_Scripts {
 
-	private $old_scripts;
-	public $allow_gzip_compression;
+	/**
+	 * @var array Old WP_Scripts data
+	 */
+	private $old_scripts = array();
+	
+	/**
+	 * @var bool Should gzip compression be used?
+	 */
+	public $allow_gzip_compression = true;
 
-	public function __construct( $scripts ) {
+	public function __construct( $scripts = '' ) {
 
-		// Setup old scripts
-		$this->old_scripts = ( empty( $scripts ) || ! ( $scripts instanceof WP_Scripts ) )
+		$this->old_scripts = empty( $scripts ) || ! ( $scripts instanceof WP_Scripts )
 			? new WP_Scripts()
 			: $scripts;
 
@@ -26,41 +38,42 @@ class WP_JS_Concat extends WP_Scripts {
 	}
 
 	public function do_items( $handles = false, $group = false ) {
-		$level       = 0;
+
+		// Setup some variables
+		$index       = 0;
 		$javascripts = array();
 		$siteurl     = site_url();
 		$handles     = ( false === $handles )
 			? $this->queue
 			: (array) $handles;
 
+		// Load all dependencies
 		$this->all_deps( $handles );
 
-		foreach( $this->to_do as $key => $handle ) {
-			if ( in_array( $handle, $this->done ) || !isset( $this->registered[$handle] ) ) {
-				continue;
-			}
+		// Loop through dependencies
+		foreach ( $this->to_do as $key => $handle ) {
 
 			// Defines a group.
-			if ( ! $this->registered[$handle]->src ) {
+			if ( ! $this->registered[ $handle ]->src ) {
 				$this->done[] = $handle;
 				continue;
 			}
 
-			if ( 0 === $group && $this->groups[$handle] > 0 ) {
+			if ( ( 0 === $group ) && $this->groups[ $handle ] > 0 ) {
 				$this->in_footer[] = $handle;
-				unset( $this->to_do[$key] );
+				unset( $this->to_do[ $key ] );
 				continue;
 			}
 
-			if ( false === $group && in_array( $handle, $this->in_footer, true ) ) {
+			if ( ( false === $group ) && in_array( $handle, $this->in_footer, true ) ) {
 				$this->in_footer = array_diff( $this->in_footer, (array) $handle );
 			}
 
 			$obj    = $this->registered[ $handle ];
 			$js_url = parse_url( $obj->src );
 
-			// Don't concat by default
-			$do_concat = false;
+			// Concat by default
+			$do_concat = true;
 
 			// Only try to concat static js files
 			if ( false !== strpos( $js_url['path'], '.js' ) ) {
@@ -81,18 +94,21 @@ class WP_JS_Concat extends WP_Scripts {
 				$js_url['path'] = substr( $js_realpath, strlen( ROOT_DIR ) - 1 );
 			}
 
+			// Allow plugins to disable concatenation of certain scriptsheets.
+			$do_concat = apply_filters( 'js_do_concat', $do_concat, $handle );
+
 			if ( true === $do_concat ) {
-				if ( ! isset( $javascripts[ $level ] ) ) {
-					$javascripts[ $level ]['type'] = 'concat';
+				if ( ! isset( $javascripts[ $index ] ) ) {
+					$javascripts[ $index ]['type'] = 'concat';
 				}
 
-				$javascripts[ $level ]['paths'][]   = $js_url['path'];
-				$javascripts[ $level ]['handles'][] = $handle;
+				$javascripts[ $index ]['paths'][]   = $js_url['path'];
+				$javascripts[ $index ]['handles'][] = $handle;
 			} else {
-				$level++;
-				$javascripts[ $level ]['type']   = 'do_item';
-				$javascripts[ $level ]['handle'] = $handle;
-				$level++;
+				$index++;
+				$javascripts[ $index ]['type']   = 'do_item';
+				$javascripts[ $index ]['handle'] = $handle;
+				$index++;
 			}
 			unset( $this->to_do[ $key ] );
 		}
@@ -112,7 +128,7 @@ class WP_JS_Concat extends WP_Scripts {
 				if ( count( $js_array['paths'] ) > 1) {
 					$paths = array_map( function( $url ) { return ROOT_DIR . $url; }, $js_array['paths'] );
 					$mtime = max( array_map( 'filemtime', $paths ) );
-					$path_str = implode( $js_array['paths'], ',' ) . "?m=${mtime}j";
+					$path_str = implode( $js_array['paths'], ',' ) . "?m={$mtime}";
 
 					if ( $this->allow_gzip_compression ) {
 						$path_64 = base64_encode( gzcompress( $path_str ) );
@@ -127,7 +143,7 @@ class WP_JS_Concat extends WP_Scripts {
 				}
 
 				$this->done = array_merge( $this->done, $js_array['handles'] );
-				echo "<script type='text/javascript' src='$href'></script>\n";
+				echo "<script type='text/javascript' src='{$href}'></script>\n";
 			}
 		}
 
@@ -135,28 +151,37 @@ class WP_JS_Concat extends WP_Scripts {
 	}
 
 	public function cache_bust_mtime( $url ) {
+
+		// Bail if no modified time
 		if ( strpos( $url, '?m=' ) ) {
 			return $url;
 		}
 
+		// Get parts, bail if no path
 		$parts = parse_url( $url );
-		if ( ! isset( $parts['path'] ) || empty( $parts['path'] ) ) {
+		if ( empty( $parts['path'] ) ) {
 			return $url;
 		}
 
+		// Put file together
 		$file = ROOT_DIR . ltrim( $parts['path'], '/' );
-
 		$mtime = false;
+
+		// Get modified time if file exists
 		if ( file_exists( $file ) ) {
 			$mtime = filemtime( $file );
 		}
 
+		// Bail if no modified time
 		if ( empty( $mtime ) ) {
 			return $url;
 		}
 
+		// No version at end of URL
 		if ( false === strpos( $url, '?' ) ) {
 			$q = '';
+
+		// Attempt to use version at end of URL
 		} else {
 			list( $url, $q ) = explode( '?', $url, 2 );
 			if ( strlen( $q ) ) {
@@ -164,22 +189,22 @@ class WP_JS_Concat extends WP_Scripts {
 			}
 		}
 
-		return "$url?m={$mtime}g{$q}";
+		return "{$url}?m={$mtime}{$q}";
 	}
 
-	public function __isset( $key ) {
-		return isset( $this->old_scripts->$key );
+	public function __isset( $key = '' ) {
+		return isset( $this->old_scripts->{$key} );
 	}
 
-	public function __unset( $key ) {
-		unset( $this->old_scripts->$key );
+	public function __unset( $key = '' ) {
+		unset( $this->old_scripts->{$key} );
 	}
 
-	public function &__get( $key ) {
-		return $this->old_scripts->$key;
+	public function &__get( $key = '' ) {
+		return $this->old_scripts->{$key};
 	}
 
 	public function __set( $key, $value ) {
-		$this->old_scripts->$key = $value;
+		$this->old_scripts->{$key} = $value;
 	}
 }
