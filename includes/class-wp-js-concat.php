@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * 
  */
-class WP_JS_goncat extends WP_Scripts {
+class WP_JS_Concat extends WP_Scripts {
 
 	/**
 	 * @var array Old WP_Scripts data
