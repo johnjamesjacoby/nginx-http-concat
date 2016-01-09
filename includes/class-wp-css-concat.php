@@ -120,7 +120,7 @@ class WP_CSS_Concat extends WP_Styles {
 					$mtime    = max( array_map( 'filemtime', $paths ) );
 					$path_str = implode( $css, ',' ) . "?m={$mtime}";
 
-					if ( $this->allow_gzip_compression ) {
+					if ( true === $this->allow_gzip_compression ) {
 						$path_64 = base64_encode( gzcompress( $path_str ) );
 						if ( strlen( $path_str ) > ( strlen( $path_64 ) + 1 ) ) {
 							$path_str = '-' . $path_64;
