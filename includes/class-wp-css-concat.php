@@ -141,28 +141,37 @@ class WP_CSS_Concat extends WP_Styles {
 	}
 
 	public function cache_bust_mtime( $url ) {
+
+		// Bail if no modified time
 		if ( strpos( $url, '?m=' ) ) {
 			return $url;
 		}
 
+		// Get parts, bail if no path
 		$parts = parse_url( $url );
-		if ( ! isset( $parts['path'] ) || empty( $parts['path'] ) ) {
+		if ( empty( $parts['path'] ) ) {
 			return $url;
 		}
 
+		// Put file together
 		$file = ABSPATH . ltrim( $parts['path'], '/' );
-
 		$mtime = false;
+
+		// Get modified time if file exists
 		if ( file_exists( $file ) ) {
 			$mtime = filemtime( $file );
 		}
 
+		// Bail if no modified time
 		if ( empty( $mtime ) ) {
 			return $url;
 		}
 
+		// No version at end of URL
 		if ( false === strpos( $url, '?' ) ) {
 			$q = '';
+
+		// Attempt to use version at end of URL
 		} else {
 			list( $url, $q ) = explode( '?', $url, 2 );
 			if ( strlen( $q ) ) {
@@ -170,7 +179,7 @@ class WP_CSS_Concat extends WP_Styles {
 			}
 		}
 
-		return "{$url}?m={$mtime}g{$q}";
+		return "{$url}?m={$mtime}{$q}";
 	}
 
 	public function __isset( $key = '' ) {
@@ -182,7 +191,7 @@ class WP_CSS_Concat extends WP_Styles {
 	}
 
 	public function &__get( $key = '' ) {
-		return $this->old_styles->$key;
+		return $this->old_styles->{$key};
 	}
 
 	public function __set( $key, $value ) {
