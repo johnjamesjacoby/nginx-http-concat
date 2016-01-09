@@ -1,22 +1,41 @@
-nginx-http-concat
-=================
+# WP Enqueue Masher
 
-Overview
---------
+WP Enqueue Masher minifies & concatenate enqueued scripts & styles.
 
-WP.com plugin to perform CSS and Javascript concatenation of individual scripts into a single script.
+It is a fork of Automattic's [nginx-http-concat](https://github.com/Automattic/nginx-http-concat).
 
-Installation & Configuration
-----------------------------
 
-1) Copy the ‘http-concat’ directory and its contents to your WordPress plugins directory.
+* Invisible once activated & configured
+* Month & week views
+* Organize events by type, category, and tag
+* Easily & logically paginate through date ranges
+* Safe, secure, & performant
 
-2) Configure the NGINX server to perform the concatenation step in the process by adding the following to your WordPress installations NGINX configuration:
+# Installation
 
-	location /_static/ {
-            fastcgi_pass unix:/var/run/fastcgi.sock;
-            include /etc/nginx/fastcgi_params;
-            fastcgi_param SCRIPT_FILENAME $document_root/wp-content/plugins/http-concat/ngx-http-concat.php;
-    }
+* Download and install using the built in WordPress plugin installer.
+* Activate in the "Plugins" area of your admin by clicking the "Activate" link. You may want to network activate this for multisite installations, or modify the configuration to be a "Must-Use" plugin.
+* Drag `./includes/wp-concat.php` into the root of your WordPress installation
+* Add this nginx rule to your WordPress configuration:
 
-3) Once this is done the installation is ready for use and you can enable/disable the JS and/or CSS concatenation via the plugins interface of your WordPress installation.
+```
+location /s/ {
+    fastcgi_pass   php; # You may use something else (hhvm,  unix:/var/run/fastcgi.sock, etc...)
+    include        /etc/nginx/fastcgi_params;
+    fastcgi_param  SCRIPT_FILENAME $document_root/wp-concat.php;
+}
+```
+
+# FAQ
+
+### What exactly does this do?
+
+No. All of WordPress's core database tables remain untouched.
+
+### Where can I get support?
+
+The WordPress support forums: https://wordpress.org/support/plugin/wp-event-calendar/
+
+### Can I contribute?
+
+Yes, please! The number of users needing events and calendars in WordPress is always growing. Having an easy-to-use API and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out!

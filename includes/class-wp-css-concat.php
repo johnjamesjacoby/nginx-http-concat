@@ -1,26 +1,15 @@
 <?php
-/*
-Plugin Name: CSS Concat
-Plugin URI: http://wp-plugins.org/#
-Description: Concatenates CSS
-Author: Automattic
-Version: 0.01
-Author URI: http://automattic.com/
- */
 
-if ( ! defined( 'ALLOW_GZIP_COMPRESSION' ) )
-	define( 'ALLOW_GZIP_COMPRESSION', true );
+class WP_CSS_Concat extends WP_Styles {
 
-class WPcom_CSS_Concat extends WP_Styles {
 	private $old_styles;
 	public $allow_gzip_compression;
 
-	function __construct( $styles ) {
-		if ( empty( $styles ) || ! ( $styles instanceof WP_Styles ) ) {
-			$this->old_styles = new WP_Styles();
-		} else {
-			$this->old_styles = $styles;
-		}
+	public function __construct( $styles ) {
+
+		$this->old_styles = ( empty( $styles ) || ! ( $styles instanceof WP_Styles ) )
+			? new WP_Styles()
+			: $styles;
 
 		// Unset all the object properties except our private copy of the styles object.
 		// We have to unset everything so that the overload methods talk to $this->old_styles->whatever
@@ -35,16 +24,20 @@ class WPcom_CSS_Concat extends WP_Styles {
 		parent::__construct();
 	}
 
-	function do_items( $handles = false, $group = false ) {
-		$handles = false === $handles ? $this->queue : (array) $handles;
+	public function do_items( $handles = false, $group = false ) {
+
+		$index       = 0;
 		$stylesheets = array();
-		$siteurl = site_url();
+		$siteurl     = site_url();
+		$handles     = ( false === $handles )
+			? $this->queue
+			: (array) $handles;
 
 		$this->all_deps( $handles );
 
-		$stylesheet_group_index = 0;
 		foreach( $this->to_do as $key => $handle ) {
-			$obj = $this->registered[$handle];
+
+			$obj      = $this->registered[$handle];
 			$obj->src = apply_filters( 'style_loader_src', $obj->src, $obj->handle );
 
 			// Core is kind of broken and returns "true" for src of "colors" handle
@@ -55,53 +48,62 @@ class WPcom_CSS_Concat extends WP_Styles {
 			} else {
 				$css_url = parse_url( $obj->src );
 			}
+
 			$extra = $obj->extra;
 
 			// Don't concat by default
 			$do_concat = false;
 
 			// Only try to concat static css files
-			if ( false !== strpos( $css_url['path'], '.css' ) )
+			if ( false !== strpos( $css_url['path'], '.css' ) ) {
 				$do_concat = true;
+			}
 
 			// Don't try to concat styles which are loaded conditionally (like IE stuff)
-			if ( isset( $extra['conditional'] ) )
+			if ( isset( $extra['conditional'] ) ) {
 				$do_concat = false;
+			}
 
 			// Don't concat rtl stuff for now until concat supports it correctly
-			if ( 'rtl' === $this->text_direction && ! empty( $extra['rtl'] ) )
+			if ( 'rtl' === $this->text_direction && ! empty( $extra['rtl'] ) ) {
 				$do_concat = false;
+			}
 
 			// Don't try to concat externally hosted scripts
-			if ( ( isset( $css_url['host'] ) && ( preg_replace( '/https?:\/\//', '', $siteurl ) != $css_url['host'] ) ) )
+			if ( ( isset( $css_url['host'] ) && ( preg_replace( '/https?:\/\//', '', $siteurl ) != $css_url['host'] ) ) ) {
 				$do_concat = false;
+			}
 
 			// Concat and canonicalize the paths only for
 			// existing scripts that aren't outside ABSPATH
 			$css_realpath = realpath( ABSPATH . $css_url['path'] );
-			if ( ! $css_realpath || 0 !== strpos( $css_realpath, ABSPATH ) )
+			if ( empty( $css_realpath ) || 0 !== strpos( $css_realpath, ABSPATH ) ) {
 				$do_concat = false;
-			else
+			} else {
 				$css_url['path'] = substr( $css_realpath, strlen( ABSPATH ) - 1 );
+			}
 
 			// Allow plugins to disable concatenation of certain stylesheets.
 			$do_concat = apply_filters( 'css_do_concat', $do_concat, $handle );
 
 			if ( true === $do_concat ) {
 				$media = $obj->args;
-				if( empty( $media ) )
+				if ( empty( $media ) ) {
 					$media = 'all';
-				if ( ! isset( $stylesheets[ $stylesheet_group_index ] ) || ( isset( $stylesheets[ $stylesheet_group_index ] ) && ! is_array( $stylesheets[ $stylesheet_group_index ] ) ) )
-					$stylesheets[ $stylesheet_group_index ] = array();
+				}
 
-				$stylesheets[ $stylesheet_group_index ][ $media ][ $handle ] = $css_url['path'];
+				if ( ! isset( $stylesheets[ $index ] ) || ( isset( $stylesheets[ $index ] ) && ! is_array( $stylesheets[ $index ] ) ) ) {
+					$stylesheets[ $index ] = array();
+				}
+
+				$stylesheets[ $index ][ $media ][ $handle ] = $css_url['path'];
 				$this->done[] = $handle;
 			} else {
-				$stylesheet_group_index++;
-				$stylesheets[ $stylesheet_group_index ][ 'noconcat' ][] = $handle;
-				$stylesheet_group_index++;
+				$index++;
+				$stylesheets[ $index ][ 'noconcat' ][] = $handle;
+				$index++;
 			}
-			unset( $this->to_do[$key] );
+			unset( $this->to_do[ $key ] );
 		}
 
 		foreach( $stylesheets as $idx => $stylesheets_group ) {
@@ -109,83 +111,82 @@ class WPcom_CSS_Concat extends WP_Styles {
 				if ( 'noconcat' == $media ) {
 
 					foreach( $css as $handle ) {
-						if ( $this->do_item( $handle, $group ) )
+						if ( $this->do_item( $handle, $group ) ) {
 							$this->done[] = $handle;
+						}
 					}
 					continue;
 				} elseif ( count( $css ) > 1) {
-					$paths = array_map( function( $url ) { return ABSPATH . $url; }, $css );
-					$mtime = max( array_map( 'filemtime', $paths ) );
+					$paths    = array_map( function( $url ) { return ABSPATH . $url; }, $css );
+					$mtime    = max( array_map( 'filemtime', $paths ) );
 					$path_str = implode( $css, ',' ) . "?m=${mtime}j";
 
 					if ( $this->allow_gzip_compression ) {
 						$path_64 = base64_encode( gzcompress( $path_str ) );
-						if ( strlen( $path_str ) > ( strlen( $path_64 ) + 1 ) )
+						if ( strlen( $path_str ) > ( strlen( $path_64 ) + 1 ) ) {
 							$path_str = '-' . $path_64;
+						}
 					}
 
-					$href = $siteurl . "/_static/??" . $path_str;
+					$href = $siteurl . '/' . MASHER_SLUG . '/??' . $path_str;
 				} else {
 					$href = $this->cache_bust_mtime( $siteurl . current( $css ) );
 				}
 
 				echo apply_filters( 'style_loader_tag', "<link rel='stylesheet' id='$media-css-$idx' href='$href' type='text/css' media='$media' />\n", $handle );
+
 				array_map( array( $this, 'print_inline_style' ), array_keys( $css ) );
 			}
 		}
 		return $this->done;
 	}
 
-	function cache_bust_mtime( $url ) {
-		if ( strpos( $url, '?m=' ) )
+	public function cache_bust_mtime( $url ) {
+		if ( strpos( $url, '?m=' ) ) {
 			return $url;
+		}
 
 		$parts = parse_url( $url );
-		if ( ! isset( $parts['path'] ) || empty( $parts['path'] ) )
+		if ( ! isset( $parts['path'] ) || empty( $parts['path'] ) ) {
 			return $url;
+		}
 
 		$file = ABSPATH . ltrim( $parts['path'], '/' );
 
 		$mtime = false;
-		if ( file_exists( $file ) )
+		if ( file_exists( $file ) ) {
 			$mtime = filemtime( $file );
+		}
 
-		if ( ! $mtime )
+		if ( empty( $mtime ) ) {
 			return $url;
+		}
 
 		if ( false === strpos( $url, '?' ) ) {
 			$q = '';
 		} else {
 			list( $url, $q ) = explode( '?', $url, 2 );
-			if ( strlen( $q ) )
+			if ( strlen( $q ) ) {
 				$q = '&amp;' . $q;
+			}
 		}
 
 		return "$url?m={$mtime}g{$q}";
 	}
 
-	function __isset( $key ) {
+	public function __isset( $key ) {
 		return isset( $this->old_styles->$key );
 	}
 
-	function __unset( $key ) {
+	public function __unset( $key ) {
 		unset( $this->old_styles->$key );
 	}
 
-	function &__get( $key ) {
+	public function &__get( $key ) {
 		return $this->old_styles->$key;
 	}
 
-	function __set( $key, $value ) {
+	public function __set( $key, $value ) {
 		$this->old_styles->$key = $value;
 	}
 }
-
-function css_concat_init() {
-	global $wp_styles;
-
-	$wp_styles = new WPcom_CSS_Concat( $wp_styles );
-	$wp_styles->allow_gzip_compression = ALLOW_GZIP_COMPRESSION;
-}
-
-add_action( 'init', 'css_concat_init' );
