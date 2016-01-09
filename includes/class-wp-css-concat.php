@@ -5,15 +5,15 @@ class WP_CSS_Concat extends WP_Styles {
 	private $old_styles;
 	public $allow_gzip_compression;
 
-	public function __construct( $styles ) {
+	public function __construct( $styles = '' ) {
 
-		$this->old_styles = ( empty( $styles ) || ! ( $styles instanceof WP_Styles ) )
+		$this->old_styles = empty( $styles ) || ! ( $styles instanceof WP_Styles )
 			? new WP_Styles()
 			: $styles;
 
-		// Unset all the object properties except our private copy of the styles object.
-		// We have to unset everything so that the overload methods talk to $this->old_styles->whatever
-		// instead of $this->whatever.
+		// Unset all the object properties except our private copy of the
+		// styles object. We have to unset everything so that the overload
+		// methods talk to $this->old_styles->whatever instead of $this->whatever.
 		foreach ( array_keys( get_object_vars( $this ) ) as $key ) {
 			if ( 'old_styles' === $key ) {
 				continue;
@@ -35,15 +35,15 @@ class WP_CSS_Concat extends WP_Styles {
 
 		$this->all_deps( $handles );
 
-		foreach( $this->to_do as $key => $handle ) {
+		foreach ( $this->to_do as $key => $handle ) {
 
-			$obj      = $this->registered[$handle];
+			$obj      = $this->registered[ $handle ];
 			$obj->src = apply_filters( 'style_loader_src', $obj->src, $obj->handle );
 
 			// Core is kind of broken and returns "true" for src of "colors" handle
 			// http://core.trac.wordpress.org/attachment/ticket/16827/colors-hacked-fixed.diff
 			// http://core.trac.wordpress.org/ticket/20729
-			if ( 'colors' == $obj->handle && true === $obj->src ) {
+			if ( 'colors' === $obj->handle && true === $obj->src ) {
 				$css_url = parse_url( wp_style_loader_src( $obj->src, $obj->handle ) );
 			} else {
 				$css_url = parse_url( $obj->src );
@@ -52,11 +52,11 @@ class WP_CSS_Concat extends WP_Styles {
 			$extra = $obj->extra;
 
 			// Don't concat by default
-			$do_concat = false;
+			$do_concat = true;
 
 			// Only try to concat static css files
-			if ( false !== strpos( $css_url['path'], '.css' ) ) {
-				$do_concat = true;
+			if ( false === strpos( $css_url['path'], '.css' ) ) {
+				$do_concat = false;
 			}
 
 			// Don't try to concat styles which are loaded conditionally (like IE stuff)
@@ -70,7 +70,7 @@ class WP_CSS_Concat extends WP_Styles {
 			}
 
 			// Don't try to concat externally hosted scripts
-			if ( ( isset( $css_url['host'] ) && ( preg_replace( '/https?:\/\//', '', $siteurl ) != $css_url['host'] ) ) ) {
+			if ( ( isset( $css_url['host'] ) && ( preg_replace( '/https?:\/\//', '', $siteurl ) !== $css_url['host'] ) ) ) {
 				$do_concat = false;
 			}
 
@@ -106,11 +106,10 @@ class WP_CSS_Concat extends WP_Styles {
 			unset( $this->to_do[ $key ] );
 		}
 
-		foreach( $stylesheets as $idx => $stylesheets_group ) {
-			foreach( $stylesheets_group as $media => $css ) {
-				if ( 'noconcat' == $media ) {
-
-					foreach( $css as $handle ) {
+		foreach ( $stylesheets as $idx => $stylesheets_group ) {
+			foreach ( $stylesheets_group as $media => $css ) {
+				if ( 'noconcat' === $media ) {
+					foreach ( $css as $handle ) {
 						if ( $this->do_item( $handle, $group ) ) {
 							$this->done[] = $handle;
 						}
@@ -171,22 +170,22 @@ class WP_CSS_Concat extends WP_Styles {
 			}
 		}
 
-		return "$url?m={$mtime}g{$q}";
+		return "{$url}?m={$mtime}g{$q}";
 	}
 
-	public function __isset( $key ) {
-		return isset( $this->old_styles->$key );
+	public function __isset( $key = '' ) {
+		return isset( $this->old_styles->{$key} );
 	}
 
-	public function __unset( $key ) {
-		unset( $this->old_styles->$key );
+	public function __unset( $key = '' ) {
+		unset( $this->old_styles->{$key} );
 	}
 
-	public function &__get( $key ) {
+	public function &__get( $key = '' ) {
 		return $this->old_styles->$key;
 	}
 
 	public function __set( $key, $value ) {
-		$this->old_styles->$key = $value;
+		$this->old_styles->{$key} = $value;
 	}
 }
