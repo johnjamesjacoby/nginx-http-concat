@@ -118,7 +118,7 @@ class WP_CSS_Concat extends WP_Styles {
 				} elseif ( count( $css ) > 1) {
 					$paths    = array_map( function( $url ) { return ABSPATH . $url; }, $css );
 					$mtime    = max( array_map( 'filemtime', $paths ) );
-					$path_str = implode( $css, ',' ) . "?m=${mtime}j";
+					$path_str = implode( $css, ',' ) . "?m={$mtime}j";
 
 					if ( $this->allow_gzip_compression ) {
 						$path_64 = base64_encode( gzcompress( $path_str ) );
