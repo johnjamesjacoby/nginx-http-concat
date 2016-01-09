@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * 
  */
-class WP_JS_Concat extends WP_Scripts {
+class WP_JS_goncat extends WP_Scripts {
 
 	/**
 	 * @var array Old WP_Scripts data
@@ -76,8 +76,8 @@ class WP_JS_Concat extends WP_Scripts {
 			$do_concat = true;
 
 			// Only try to concat static js files
-			if ( false !== strpos( $js_url['path'], '.js' ) ) {
-				$do_concat = true;
+			if ( false === strpos( $js_url['path'], '.js' ) ) {
+				$do_concat = false;
 			}
 
 			// Don't try to concat externally hosted scripts
