@@ -20,7 +20,7 @@ class WP_JS_Concat extends WP_Scripts {
 
 	public function __construct( $scripts = '' ) {
 
-		$this->old_scripts = empty( $scripts ) || ! ( $scripts instanceof WP_Scripts )
+		$this->old_scripts = ( empty( $scripts ) || ! ( $scripts instanceof WP_Scripts ) )
 			? new WP_Scripts()
 			: $scripts;
 

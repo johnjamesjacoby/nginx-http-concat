@@ -7,7 +7,7 @@ class WP_CSS_Concat extends WP_Styles {
 
 	public function __construct( $styles = '' ) {
 
-		$this->old_styles = empty( $styles ) || ! ( $styles instanceof WP_Styles )
+		$this->old_styles = ( empty( $styles ) || ! ( $styles instanceof WP_Styles ) )
 			? new WP_Styles()
 			: $styles;
 
