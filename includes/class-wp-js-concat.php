@@ -73,12 +73,12 @@ class WP_JS_Concat extends WP_Scripts {
 			}
 
 			// Concat and canonicalize the paths only for
-			// existing scripts that aren't outside ABSPATH
-			$js_realpath = realpath( ABSPATH . $js_url['path'] );
-			if ( empty( $js_realpath ) || 0 !== strpos( $js_realpath, ABSPATH ) ) {
+			// existing scripts that aren't outside ROOT_DIR
+			$js_realpath = realpath( ROOT_DIR . $js_url['path'] );
+			if ( empty( $js_realpath ) || 0 !== strpos( $js_realpath, ROOT_DIR ) ) {
 				$do_concat = false;
 			} else {
-				$js_url['path'] = substr( $js_realpath, strlen( ABSPATH ) - 1 );
+				$js_url['path'] = substr( $js_realpath, strlen( ROOT_DIR ) - 1 );
 			}
 
 			if ( true === $do_concat ) {
@@ -110,7 +110,7 @@ class WP_JS_Concat extends WP_Scripts {
 				array_map( array( $this, 'print_extra_script' ), $js_array['handles'] );
 
 				if ( count( $js_array['paths'] ) > 1) {
-					$paths = array_map( function( $url ) { return ABSPATH . $url; }, $js_array['paths'] );
+					$paths = array_map( function( $url ) { return ROOT_DIR . $url; }, $js_array['paths'] );
 					$mtime = max( array_map( 'filemtime', $paths ) );
 					$path_str = implode( $js_array['paths'], ',' ) . "?m=${mtime}j";
 
@@ -144,7 +144,7 @@ class WP_JS_Concat extends WP_Scripts {
 			return $url;
 		}
 
-		$file = ABSPATH . ltrim( $parts['path'], '/' );
+		$file = ROOT_DIR . ltrim( $parts['path'], '/' );
 
 		$mtime = false;
 		if ( file_exists( $file ) ) {

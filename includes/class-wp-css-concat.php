@@ -26,6 +26,7 @@ class WP_CSS_Concat extends WP_Styles {
 
 	public function do_items( $handles = false, $group = false ) {
 
+		// Setup some variables
 		$index       = 0;
 		$stylesheets = array();
 		$siteurl     = site_url();
@@ -33,8 +34,10 @@ class WP_CSS_Concat extends WP_Styles {
 			? $this->queue
 			: (array) $handles;
 
+		// Load all dependencies
 		$this->all_deps( $handles );
 
+		// Loop through dependencies
 		foreach ( $this->to_do as $key => $handle ) {
 
 			$obj      = $this->registered[ $handle ];
@@ -51,7 +54,7 @@ class WP_CSS_Concat extends WP_Styles {
 
 			$extra = $obj->extra;
 
-			// Don't concat by default
+			// Concat by default
 			$do_concat = true;
 
 			// Only try to concat static css files
@@ -75,12 +78,12 @@ class WP_CSS_Concat extends WP_Styles {
 			}
 
 			// Concat and canonicalize the paths only for
-			// existing scripts that aren't outside ABSPATH
-			$css_realpath = realpath( ABSPATH . $css_url['path'] );
-			if ( empty( $css_realpath ) || 0 !== strpos( $css_realpath, ABSPATH ) ) {
+			// existing scripts that aren't outside ROOT_DIR
+			$css_realpath = realpath( ROOT_DIR . $css_url['path'] );
+			if ( empty( $css_realpath ) || 0 !== strpos( $css_realpath, ROOT_DIR ) ) {
 				$do_concat = false;
 			} else {
-				$css_url['path'] = substr( $css_realpath, strlen( ABSPATH ) - 1 );
+				$css_url['path'] = substr( $css_realpath, strlen( ROOT_DIR ) - 1 );
 			}
 
 			// Allow plugins to disable concatenation of certain stylesheets.
@@ -115,8 +118,11 @@ class WP_CSS_Concat extends WP_Styles {
 						}
 					}
 					continue;
-				} elseif ( count( $css ) > 1) {
-					$paths    = array_map( function( $url ) { return ABSPATH . $url; }, $css );
+				} elseif ( count( $css ) > 1 ) {
+					$paths = array_map( function( $url ) {
+						return ROOT_DIR . $url;
+					}, $css );
+
 					$mtime    = max( array_map( 'filemtime', $paths ) );
 					$path_str = implode( $css, ',' ) . "?m={$mtime}";
 
@@ -154,7 +160,7 @@ class WP_CSS_Concat extends WP_Styles {
 		}
 
 		// Put file together
-		$file = ABSPATH . ltrim( $parts['path'], '/' );
+		$file = ROOT_DIR . ltrim( $parts['path'], '/' );
 		$mtime = false;
 
 		// Get modified time if file exists

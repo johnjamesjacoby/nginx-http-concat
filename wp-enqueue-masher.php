@@ -29,6 +29,11 @@ if ( ! defined( 'MASHER_SLUG' ) ) {
 	define( 'MASHER_SLUG', 's' );
 }
 
+// Allow custom slug (changing this requires nginx restart)
+if ( ! defined( 'ROOT_DIR' ) ) {
+	define( 'ROOT_DIR', ABSPATH );
+}
+
 /**
  * Load the masher
  *
