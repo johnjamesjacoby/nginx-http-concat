@@ -83,7 +83,7 @@ class WP_CSS_Concat extends WP_Styles {
 			if ( empty( $css_realpath ) || 0 !== strpos( $css_realpath, ROOT_DIR ) ) {
 				$do_concat = false;
 			} else {
-				$css_url['path'] = substr( $css_realpath, strlen( ROOT_DIR ) - 1 );
+				$css_url['path'] = str_replace( ROOT_DIR, '', $css_realpath );
 			}
 
 			// Allow plugins to disable concatenation of certain stylesheets.

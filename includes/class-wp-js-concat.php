@@ -4,7 +4,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * 
+ *
  */
 class WP_JS_Concat extends WP_Scripts {
 
@@ -12,7 +12,7 @@ class WP_JS_Concat extends WP_Scripts {
 	 * @var array Old WP_Scripts data
 	 */
 	private $old_scripts = array();
-	
+
 	/**
 	 * @var bool Should gzip compression be used?
 	 */
@@ -91,7 +91,7 @@ class WP_JS_Concat extends WP_Scripts {
 			if ( empty( $js_realpath ) || 0 !== strpos( $js_realpath, ROOT_DIR ) ) {
 				$do_concat = false;
 			} else {
-				$js_url['path'] = substr( $js_realpath, strlen( ROOT_DIR ) - 1 );
+				$js_url['path'] = str_replace( ROOT_DIR, '', $css_realpath );
 			}
 
 			// Allow plugins to disable concatenation of certain scriptsheets.
