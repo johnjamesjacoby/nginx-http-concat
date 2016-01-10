@@ -183,6 +183,8 @@ $css_minify    = new CSSmin();
 
 // Loop through arguments & start concatenating
 foreach ( $args as $uri ) {
+
+	// Get the fullpath to
 	$fullpath = concat_get_uri_path( $uri );
 
 	// 404 if file does not exist
@@ -275,7 +277,7 @@ foreach ( $args as $uri ) {
 					if ( 0 !== strpos( $match['path'], 'http' ) && ( '/' !== $match['path'][0] ) ) {
 						$pre_output .=
 							$match['pre_path']
-							. ( $dirpath == '/' ? '/' : $dirpath . '/' )
+							. ( '/' !== $dirpath ? '/' : $dirpath . '/' )
 							. $match['path'] . $match['post_path'] . "\n";
 					} else {
 						$pre_output .= $match[0] . "\n";
@@ -298,8 +300,12 @@ foreach ( $args as $uri ) {
 	}
 }
 
-header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
-header( 'Content-Length: ' . ( strlen( $pre_output ) + strlen( $output ) ) );
-header( "Content-Type: $mime_type" );
+/** Headers *******************************************************************/
+
+header( 'Last-Modified: '  . gmdate( 'D, d M Y H:i:s', $last_modified ) . ' GMT' );
+header( 'Content-Length: ' . strlen( $pre_output ) + strlen( $output ) );
+header( 'Content-Type: '   . $mime_type );
+
+/** Output ********************************************************************/
 
 echo $pre_output . $output;
