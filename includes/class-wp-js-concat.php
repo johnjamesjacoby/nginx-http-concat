@@ -91,7 +91,7 @@ class WP_JS_Concat extends WP_Scripts {
 			if ( empty( $js_realpath ) || 0 !== strpos( $js_realpath, ROOT_DIR ) ) {
 				$do_concat = false;
 			} else {
-				$js_url['path'] = str_replace( ROOT_DIR, '', $css_realpath );
+				$js_url['path'] = str_replace( ROOT_DIR, '', $js_realpath );
 			}
 
 			// Allow plugins to disable concatenation of certain scriptsheets.
