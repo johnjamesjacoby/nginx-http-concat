@@ -126,8 +126,11 @@ class WP_JS_Concat extends WP_Scripts {
 				array_map( array( $this, 'print_extra_script' ), $js_array['handles'] );
 
 				if ( count( $js_array['paths'] ) > 1) {
-					$paths = array_map( function( $url ) { return ROOT_DIR . $url; }, $js_array['paths'] );
-					$mtime = max( array_map( 'filemtime', $paths ) );
+					$paths = array_map( function( $url ) {
+						return ROOT_DIR . $url;
+					}, $js_array['paths'] );
+
+					$mtime    = max( array_map( 'filemtime', $paths ) );
 					$path_str = implode( $js_array['paths'], ',' ) . "?m={$mtime}";
 
 					if ( true === $this->allow_gzip_compression ) {
@@ -139,7 +142,7 @@ class WP_JS_Concat extends WP_Scripts {
 
 					$href = $siteurl . '/' . MASHER_SLUG . '/??' . $path_str;
 				} else {
-					$href = $this->cache_bust_mtime( $siteurl . $js_array['paths'][0] );
+					$href = $this->cache_bust_mtime( $siteurl . '/' . ltrim( $js_array['paths'][0], '/' ) );
 				}
 
 				$this->done = array_merge( $this->done, $js_array['handles'] );

@@ -80,7 +80,7 @@ class WP_CSS_Concat extends WP_Styles {
 			// Concat and canonicalize the paths only for
 			// existing scripts that aren't outside ROOT_DIR
 			$css_realpath = realpath( ROOT_DIR . $css_url['path'] );
-			if ( empty( $css_realpath ) || 0 !== strpos( $css_realpath, ROOT_DIR ) ) {
+			if ( empty( $css_realpath ) || ( 0 !== strpos( $css_realpath, ROOT_DIR ) ) ) {
 				$do_concat = false;
 			} else {
 				$css_url['path'] = str_replace( ROOT_DIR, '', $css_realpath );
@@ -118,6 +118,7 @@ class WP_CSS_Concat extends WP_Styles {
 						}
 					}
 					continue;
+
 				} elseif ( count( $css ) > 1 ) {
 					$paths = array_map( function( $url ) {
 						return ROOT_DIR . $url;
@@ -135,18 +136,19 @@ class WP_CSS_Concat extends WP_Styles {
 
 					$href = $siteurl . '/' . MASHER_SLUG . '/??' . $path_str;
 				} else {
-					$href = $this->cache_bust_mtime( $siteurl . current( $css ) );
+					$href = $this->cache_bust_mtime( $siteurl . '/' . ltrim( current( $css ), '/' ) );
 				}
 
-				echo apply_filters( 'style_loader_tag', "<link rel='stylesheet' id='{$media}-css-{$idx}' href='{$href}' type='text/css' media='{$media}' />\n", $handle );
+				echo apply_filters( 'style_loader_tag', "<link rel='stylesheet' class='{$handle}' wp-enqueue-masher' id='{$media}-css-{$idx}' href='{$href}' type='text/css' media='{$media}' />\n", key( $css ) );
 
 				array_map( array( $this, 'print_inline_style' ), array_keys( $css ) );
 			}
 		}
+
 		return $this->done;
 	}
 
-	public function cache_bust_mtime( $url ) {
+	public function cache_bust_mtime( $url = '' ) {
 
 		// Bail if no modified time
 		if ( strpos( $url, '?m=' ) ) {
