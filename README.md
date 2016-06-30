@@ -6,9 +6,6 @@ It is a fork of Automattic's [nginx-http-concat](https://github.com/Automattic/n
 
 
 * Invisible once activated & configured
-* Month & week views
-* Organize events by type, category, and tag
-* Easily & logically paginate through date ranges
 * Safe, secure, & performant
 
 # Installation
@@ -30,12 +27,16 @@ location /s/ {
 
 ### What exactly does this do?
 
+Concatenates individual scripts and styles.
+
+### Are database tables modified?
+
 No. All of WordPress's core database tables remain untouched.
 
 ### Where can I get support?
 
-The WordPress support forums: https://wordpress.org/support/plugin/wp-event-calendar/
+The WordPress support forums: https://wordpress.org/support/plugin/wp-enqueue-masher/
 
 ### Can I contribute?
 
-Yes, please! The number of users needing events and calendars in WordPress is always growing. Having an easy-to-use API and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out!
+Yes, please! Having an easy-to-use plugin and powerful set of functions is critical to managing complex WordPress installations. If this is your thing, please help us out!
