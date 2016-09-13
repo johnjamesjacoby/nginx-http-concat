@@ -46,7 +46,7 @@ function _wp_enqueue_masher() {
 	global $wp_styles, $wp_scripts;
 
 	// Get include path
-	$path = plugin_dir_path( __FILE__ ) . 'wp-enqueue-smasher/';
+	$path = plugin_dir_path( __FILE__ ) . 'wp-enqueue-masher/';
 
 	// Include files
 	require_once $path . 'includes/class-wp-css-concat.php';
