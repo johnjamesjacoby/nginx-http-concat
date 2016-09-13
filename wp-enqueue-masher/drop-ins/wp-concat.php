@@ -281,7 +281,7 @@ foreach ( $args as $uri ) {
 					if ( 0 !== strpos( $match['path'], 'http' ) && ( '/' !== $match['path'][0] ) ) {
 						$pre_output .=
 							$match['pre_path']
-							. ( '/' !== $dirpath ? '/' : $dirpath . '/' )
+							. ( $dirpath == '/' ? '/' : $dirpath . '/' )
 							. $match['path'] . $match['post_path'] . "\n";
 					} else {
 						$pre_output .= $match[0] . "\n";
