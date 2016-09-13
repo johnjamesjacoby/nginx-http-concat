@@ -15,7 +15,7 @@ It is a fork of Automattic's [nginx-http-concat](https://github.com/Automattic/n
 
 * Download and install using the built in WordPress plugin installer.
 * Activate in the "Plugins" area of your admin by clicking the "Activate" link. You may want to network activate this for multisite installations, or modify the configuration to be a "Must-Use" plugin.
-* Drag `./includes/wp-concat.php` into the root of your WordPress installation
+* Drag `./drop-ins/wp-concat.php` into the root of your WordPress installation
 * Add this nginx rule to your WordPress configuration:
 
 ```

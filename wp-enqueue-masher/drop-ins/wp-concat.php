@@ -27,7 +27,7 @@ $concat_types     = array(
 $dir_name = dirname( __FILE__ );
 
 if ( ! defined( 'CONCAT_CSSMIN_PATH' ) ) {
-	define( 'CONCAT_CSSMIN_PATH', "{$dir_name}/content/plugins/wp-enqueue-masher/wp-enqueue-masher/includes/cssmin.php" );
+	define( 'CONCAT_CSSMIN_PATH', "{$dir_name}/wp-content/plugins/wp-enqueue-masher/wp-enqueue-masher/includes/cssmin.php" );
 }
 
 // Determine the document root from this scripts path in the plugins
@@ -185,8 +185,8 @@ $css_minify    = new CSSmin();
 foreach ( $args as $uri ) {
 
 	// WordPress is in a subdirectory
-	$uri = str_replace( 'wp-includes/', 'wordpress/wp-includes/', $uri );
-	$uri = str_replace( 'wp-admin/',    'wordpress/wp-admin/',    $uri );
+	//$uri = str_replace( 'wp-includes/', 'wordpress/wp-includes/', $uri );
+	//$uri = str_replace( 'wp-admin/',    'wordpress/wp-admin/',    $uri );
 
 	// Get the fullpath to
 	$fullpath = concat_get_uri_path( $uri );
