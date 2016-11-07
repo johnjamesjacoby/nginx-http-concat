@@ -74,6 +74,7 @@ class WP_JS_Concat extends WP_Scripts {
 		$index       = 0;
 		$javascripts = array();
 		$siteurl     = site_url();
+		$output      = '';
 		$handles     = ( false === $handles )
 			? $this->queue
 			: (array) $handles;
@@ -144,19 +145,26 @@ class WP_JS_Concat extends WP_Scripts {
 			unset( $this->to_do[ $key ] );
 		}
 
+		// Perf boost if no scripts need concatenating
 		if ( empty( $javascripts ) ) {
 			return $this->done;
 		}
 
+		// Loop through scripts
 		foreach ( $javascripts as $js_array ) {
+
+			// Item is not part of concatenation
 			if ( 'do_item' === $js_array['type'] ) {
 				if ( $this->do_item( $js_array['handle'], $group ) ) {
 					$this->done[] = $js_array['handle'];
 				}
-			} else if ( 'concat' === $js_array['type'] ) {
+
+			// Item should be concatenated
+			} elseif ( 'concat' === $js_array['type'] ) {
 				array_map( array( $this, 'print_extra_script' ), $js_array['handles'] );
 
-				if ( count( $js_array['paths'] ) > 1) {
+				// Array of several scripts
+				if ( count( $js_array['paths'] ) > 1 ) {
 					$paths = array_map( function( $url ) {
 						return ROOT_DIR . $url;
 					}, $js_array['paths'] );
@@ -172,13 +180,23 @@ class WP_JS_Concat extends WP_Scripts {
 					}
 
 					$href = $siteurl . '/' . MASHER_SLUG . '/??' . $path_str;
+
+				// One script
 				} else {
 					$href = $this->cache_bust_mtime( $siteurl . '/' . ltrim( $js_array['paths'][0], '/' ) );
 				}
 
+				// Merge done with current handles
 				$this->done = array_merge( $this->done, $js_array['handles'] );
-				echo "<script type='text/javascript' src='{$href}'></script>\n";
+
+				// Combine output
+				$output .= "<script type='text/javascript' class='{$handle} wp-enqueue-masher' src='{$href}'></script>\n";
 			}
+		}
+
+		// Output if not empty
+		if ( ! empty( $output ) ) {
+			echo $output;
 		}
 
 		return $this->done;
@@ -206,7 +224,7 @@ class WP_JS_Concat extends WP_Scripts {
 		}
 
 		// Put file together
-		$file = ROOT_DIR . ltrim( $parts['path'], '/' );
+		$file  = ROOT_DIR . ltrim( $parts['path'], '/' );
 		$mtime = false;
 
 		// Get modified time if file exists

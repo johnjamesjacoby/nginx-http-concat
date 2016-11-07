@@ -74,6 +74,7 @@ class WP_CSS_Concat extends WP_Styles {
 		$index       = 0;
 		$stylesheets = array();
 		$siteurl     = site_url();
+		$output      = '';
 		$handles     = ( false === $handles )
 			? $this->queue
 			: (array) $handles;
@@ -153,8 +154,18 @@ class WP_CSS_Concat extends WP_Styles {
 			unset( $this->to_do[ $key ] );
 		}
 
+		// Perf boost if no styles need concatenating
+		if ( empty( $stylesheets ) ) {
+			return $this->done;
+		}
+
+		// Loop through styles
 		foreach ( $stylesheets as $idx => $stylesheets_group ) {
+
+			// Loop through style groups
 			foreach ( $stylesheets_group as $media => $css ) {
+
+				// Item is not part of concatenation
 				if ( 'noconcat' === $media ) {
 					foreach ( $css as $handle ) {
 						if ( $this->do_item( $handle, $group ) ) {
@@ -163,6 +174,7 @@ class WP_CSS_Concat extends WP_Styles {
 					}
 					continue;
 
+				// Array of several styles
 				} elseif ( count( $css ) > 1 ) {
 					$paths = array_map( function( $url ) {
 						return ROOT_DIR . $url;
@@ -179,14 +191,22 @@ class WP_CSS_Concat extends WP_Styles {
 					}
 
 					$href = $siteurl . '/' . MASHER_SLUG . '/??' . $path_str;
+
+				// Single style
 				} else {
 					$href = $this->cache_bust_mtime( $siteurl . '/' . ltrim( current( $css ), '/' ) );
 				}
 
-				echo apply_filters( 'style_loader_tag', "<link rel='stylesheet' class='{$handle}' wp-enqueue-masher' id='{$media}-css-{$idx}' href='{$href}' type='text/css' media='{$media}' />\n", key( $css ) );
+				// Combine output
+				$output .= apply_filters( 'style_loader_tag', "<link rel='stylesheet' class='{$handle} wp-enqueue-masher' id='{$media}-css-{$idx}' href='{$href}' type='text/css' media='{$media}' />\n", key( $css ) );
 
 				array_map( array( $this, 'print_inline_style' ), array_keys( $css ) );
 			}
+		}
+
+		// Output if not empty
+		if ( ! empty( $output ) ) {
+			echo $output;
 		}
 
 		return $this->done;
@@ -214,7 +234,7 @@ class WP_CSS_Concat extends WP_Styles {
 		}
 
 		// Put file together
-		$file = ROOT_DIR . ltrim( $parts['path'], '/' );
+		$file  = ROOT_DIR . ltrim( $parts['path'], '/' );
 		$mtime = false;
 
 		// Get modified time if file exists
