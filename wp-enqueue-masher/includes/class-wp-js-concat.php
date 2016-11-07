@@ -1,23 +1,44 @@
 <?php
 
+/**
+ * Enqueue Masher JS Concatenation
+ *
+ * This class extends WordPress's WP_Scripts class, and replaces a few methods
+ * to better help with combining scripts together.
+ *
+ * @package Plugins/Masher/Classes/CSS
+ */
+
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
-/**
- *
- */
 class WP_JS_Concat extends WP_Scripts {
 
 	/**
-	 * @var array Old WP_Scripts data
+	 * Original global instance of WP_Scripts
+	 *
+	 * @since 0.1.0
+	 *
+	 * @var WP_Scripts
 	 */
 	private $old_scripts = array();
 
 	/**
-	 * @var bool Should gzip compression be used?
+	 * Whether to use GZip compression on end result
+	 *
+	 * @since 0.1.0
+	 *
+	 * @var bool
 	 */
 	public $allow_gzip_compression = true;
 
+	/**
+	 * Class constructor, used to juggle the globally enqueued scripts
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param WP_Scripts $scripts
+	 */
 	public function __construct( $scripts = '' ) {
 
 		$this->old_scripts = ( empty( $scripts ) || ! ( $scripts instanceof WP_Scripts ) )
@@ -37,6 +58,16 @@ class WP_JS_Concat extends WP_Scripts {
 		parent::__construct();
 	}
 
+	/**
+	 * Process all of the enqueued scripts
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param array $handles
+	 * @param string $group
+	 *
+	 * @return array
+	 */
 	public function do_items( $handles = false, $group = false ) {
 
 		// Setup some variables
@@ -94,7 +125,7 @@ class WP_JS_Concat extends WP_Scripts {
 				$js_url['path'] = str_replace( ROOT_DIR, '', $js_realpath );
 			}
 
-			// Allow plugins to disable concatenation of certain scriptsheets.
+			// Allow plugins to disable concatenation of certain scripts.
 			$do_concat = apply_filters( 'js_do_concat', $do_concat, $handle );
 
 			if ( true === $do_concat ) {
@@ -153,6 +184,14 @@ class WP_JS_Concat extends WP_Scripts {
 		return $this->done;
 	}
 
+	/**
+	 * Determine the time when the cache for this request was last changed
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $url
+	 * @return string
+	 */
 	public function cache_bust_mtime( $url ) {
 
 		// Bail if no modified time
@@ -195,18 +234,51 @@ class WP_JS_Concat extends WP_Scripts {
 		return "{$url}?m={$mtime}{$q}";
 	}
 
+	/**
+	 * Magic issetter for checking if variables are set
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $key
+	 * @return bool
+	 */
 	public function __isset( $key = '' ) {
 		return isset( $this->old_scripts->{$key} );
 	}
 
+	/**
+	 * Magic unsetter for nullifying an object variable
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $key
+	 */
 	public function __unset( $key = '' ) {
 		unset( $this->old_scripts->{$key} );
 	}
 
+	/**
+	 * Magic byref getter for object variables
+	 *
+	 * Must be byref, or the sky will fall on your head.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $key
+	 * @return mixed
+	 */
 	public function &__get( $key = '' ) {
 		return $this->old_scripts->{$key};
 	}
 
+	/**
+	 * Magic setter for setting object variables
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $key
+	 * @param mixed $value
+	 */
 	public function __set( $key, $value ) {
 		$this->old_scripts->{$key} = $value;
 	}
