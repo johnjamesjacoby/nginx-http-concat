@@ -1,10 +1,44 @@
 <?php
 
+/**
+ * Enqueue Masher CSS Concatenation
+ *
+ * This class extends WordPress's WP_Styles class, and replaces a few methods
+ * to better help with combining style-sheets together.
+ *
+ * @package Plugins/Masher/Classes/CSS
+ */
+
+// Exit if accessed directly
+defined( 'ABSPATH' ) || exit;
+
 class WP_CSS_Concat extends WP_Styles {
 
+	/**
+	 * Original global instance of WP_Styles
+	 *
+	 * @since 0.1.0
+	 *
+	 * @var WP_Styles
+	 */
 	private $old_styles;
+
+	/**
+	 * Whether to use GZip compression on end result
+	 *
+	 * @since 0.1.0
+	 *
+	 * @var bool
+	 */
 	public $allow_gzip_compression;
 
+	/**
+	 * Class constructor, used to juggle the globally enqueued styles
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param WP_Styles $styles
+	 */
 	public function __construct( $styles = '' ) {
 
 		$this->old_styles = ( empty( $styles ) || ! ( $styles instanceof WP_Styles ) )
@@ -24,6 +58,16 @@ class WP_CSS_Concat extends WP_Styles {
 		parent::__construct();
 	}
 
+	/**
+	 * Process all of the enqueued styles
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param array $handles
+	 * @param string $group
+	 *
+	 * @return array
+	 */
 	public function do_items( $handles = false, $group = false ) {
 
 		// Setup some variables
@@ -148,6 +192,14 @@ class WP_CSS_Concat extends WP_Styles {
 		return $this->done;
 	}
 
+	/**
+	 * Determine the time when the cache for this request was last changed
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $url
+	 * @return string
+	 */
 	public function cache_bust_mtime( $url = '' ) {
 
 		// Bail if no modified time
@@ -190,18 +242,51 @@ class WP_CSS_Concat extends WP_Styles {
 		return "{$url}?m={$mtime}{$q}";
 	}
 
+	/**
+	 * Magic issetter for checking if variables are set
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $key
+	 * @return bool
+	 */
 	public function __isset( $key = '' ) {
 		return isset( $this->old_styles->{$key} );
 	}
 
+	/**
+	 * Magic unsetter for nullifying an object variable
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $key
+	 */
 	public function __unset( $key = '' ) {
 		unset( $this->old_styles->{$key} );
 	}
 
+	/**
+	 * Magic byref getter for object variables
+	 *
+	 * Must be byref, or the sky will fall on your head.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $key
+	 * @return mixed
+	 */
 	public function &__get( $key = '' ) {
 		return $this->old_styles->{$key};
 	}
 
+	/**
+	 * Magic setter for setting object variables
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $key
+	 * @param mixed $value
+	 */
 	public function __set( $key, $value ) {
 		$this->old_styles->{$key} = $value;
 	}
