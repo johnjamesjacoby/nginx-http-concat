@@ -203,7 +203,7 @@ class WP_JS_Concat extends WP_Scripts {
 		unset( $this->old_scripts->{$key} );
 	}
 
-	public function &__get( $key = '' ) {
+	public function __get( $key = '' ) {
 		return $this->old_scripts->{$key};
 	}
 
