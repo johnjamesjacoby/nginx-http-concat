@@ -198,7 +198,7 @@ class WP_CSS_Concat extends WP_Styles {
 		unset( $this->old_styles->{$key} );
 	}
 
-	public function __get( $key = '' ) {
+	public function &__get( $key = '' ) {
 		return $this->old_styles->{$key};
 	}
 
