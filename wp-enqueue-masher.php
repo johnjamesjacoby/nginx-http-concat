@@ -4,7 +4,7 @@
  * Plugin Name: WP Enqueue Masher
  * Plugin URI:  https://wordpress.org/plugins/wp-enqueue-masher/
  * Author:      John James Jacoby
- * Author URI:  https://jjj.me/
+ * Author URI:  https://jjj.blog/
  * Version:     0.1.0
  * Description: Minify & concatenate enqueued scripts & styles
  * License:     GPL v2 or later
